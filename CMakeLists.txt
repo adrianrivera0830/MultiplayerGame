@@ -34,7 +34,8 @@ if (WIN32)
     link_directories(${SDL2_LIB_DIR} ${SDL2_IMAGE_LIB_DIR} ${SDL2_TTF_LIB_DIR})
 
     # Definir el ejecutable
-    add_executable(MultiplayerGame main.cpp)
+    add_executable(MultiplayerGame main.cpp
+            NetworkHeaders.h)
 
     # Vincular bibliotecas necesarias
     target_link_libraries(MultiplayerGame mingw32 SDL2main SDL2 SDL2_image SDL2_ttf ws2_32)
@@ -49,7 +50,8 @@ elseif (UNIX)
 
     include_directories(${SDL2_INCLUDE_DIRS} ${SDL2_IMAGE_INCLUDE_DIRS} ${SDL2_TTF_INCLUDE_DIRS})
 
-    add_executable(MultiplayerGame main.cpp)
+    add_executable(MultiplayerGame main.cpp
+            NetworkHeaders.h)
 
     target_link_libraries(MultiplayerGame ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
 endif()
