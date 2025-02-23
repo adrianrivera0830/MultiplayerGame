@@ -1,0 +1,50 @@
+# Archivos generados por CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+
+# Archivos binarios y ejecutables
+/bin/
+/build/
+/out/
+/Debug/
+/Release/
+/*.exe
+/*.out
+/*.app
+/*.a
+/*.lib
+/*.la
+/*.lo
+/*.so
+/*.dylib
+/*.dll
+/*.pdb
+/*.o
+/*.obj
+
+# Archivos de CLion y JetBrains
+.idea/
+*.iml
+
+# Archivos de depuración
+*.log
+*.stackdump
+*.swp
+vgcore.*
+
+# Archivos temporales y de sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de dependencias
+compile_commands.json
+
+# Librerías de terceros descargadas manualmente
+/vendor/
+
+# Carpeta de compilación de CLion
+cmake-build-debug/
+cmake-build-release/
+cmake-build-*/
