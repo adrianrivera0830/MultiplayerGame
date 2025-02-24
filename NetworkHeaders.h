@@ -56,7 +56,7 @@
  * @brief Inicializa Winsock en Windows. No hace nada en Linux.
  * @return `true` si la inicialización fue exitosa, `false` en caso de error.
  */
-inline bool InitializeSockets() {
+inline bool InitializeSocketLibrary() {
 #if defined(_WIN32)
     WSADATA wsaData;
     return WSAStartup(MAKEWORD(2, 2), &wsaData) == 0;
