@@ -8,14 +8,20 @@
 #include <memory>
 
 #include "NetworkHeaders.h"
+#include "ObserverPattern.h"
 #include "Peer.h"
 
-class NetworkManager {
+class NetworkManager : public Subject{
 private:
     void Send();
     void Receive();
+    void SetOpponent(sockaddr_in opponent);
 private:
     std::unique_ptr<Peer> m_player;
+
+    sockaddr_in m_opponent;
+    socklen_t m_opponentLen;
+
 public:
     NetworkManager();
 };
