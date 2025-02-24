@@ -12,6 +12,7 @@ void NetworkManager::Send(char* buffer, int size) {
     );
 
     if (bytes_sent < 0) return;
+
 }
 
 void NetworkManager::Receive() {
@@ -31,15 +32,30 @@ void NetworkManager::Receive() {
     m_opponent = from;
     m_opponentLen = fromLen;
 
-    std::cout << "Mensaje recibido: " << (char *)receiveBuffer.m_buffer << std::endl;
+    PacketHeader received;
+    received.ReadFromBufferToStruct(receiveBuffer);
 
+    SetPacket(received);
 
 }
 
 void NetworkManager::CommunicationLoop() {
     while (true) {
-        std::cout << "hola\n";
+        if (!toSendPackets.empty()) {
+            PacketHeader toSendHeader = toSendPackets.front();
+            toSendPackets.pop();
+
+            Buffer write(1024);
+            toSendHeader.WriteFromStructToBuffer(write);
+            Send((char *)write.m_buffer,write.m_size);
+        }
+
+        Receive();
     }
+}
+
+void NetworkManager::AddPacketToSend(PacketHeader header) {
+    toSendPackets.push(header);
 }
 
 bool IsSockaddrValid(const sockaddr_in &addr) {
