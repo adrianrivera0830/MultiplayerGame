@@ -15,7 +15,6 @@ class NetworkManager : public Subject{
 private:
     void Send();
     void Receive();
-    void SetOpponent(sockaddr_in opponent);
 private:
     std::unique_ptr<Peer> m_player;
 
@@ -24,6 +23,8 @@ private:
 
 public:
     NetworkManager();
+    void SetOpponent(sockaddr_in opponent);
+
 };
 
 
