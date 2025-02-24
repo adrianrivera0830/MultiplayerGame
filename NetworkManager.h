@@ -13,7 +13,7 @@
 
 class NetworkManager : public Subject{
 private:
-    void Send();
+    void Send(char *buffer, int size);
     void Receive();
 private:
     std::unique_ptr<Peer> m_player;
@@ -24,6 +24,7 @@ private:
 public:
     NetworkManager();
     void SetOpponent(sockaddr_in opponent);
+    void CommunicationLoop();
 
 };
 

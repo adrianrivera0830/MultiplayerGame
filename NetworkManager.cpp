@@ -4,10 +4,42 @@
 
 #include "NetworkManager.h"
 
-void NetworkManager::Send() {
+void NetworkManager::Send(char* buffer, int size) {
+    int bytes_sent = m_player->SendTo(
+    buffer,size,
+    (sockaddr *)&m_opponent,
+    m_opponentLen
+    );
+
+    if (bytes_sent < 0) return;
 }
 
 void NetworkManager::Receive() {
+    Buffer receiveBuffer(1024);
+
+    sockaddr_in from;   // Crear estructura para almacenar la dirección del remitente
+    socklen_t fromLen = sizeof(from); // Inicializar con el tamaño correcto
+
+    int bytesReceived = m_player->ReceiveFrom((char *)receiveBuffer.m_buffer
+        , receiveBuffer.m_size
+        , (sockaddr *) &from
+        , &fromLen
+        );
+
+    if (bytesReceived < 0) return;
+
+    m_opponent = from;
+    m_opponentLen = fromLen;
+
+    std::cout << "Mensaje recibido: " << (char *)receiveBuffer.m_buffer << std::endl;
+
+
+}
+
+void NetworkManager::CommunicationLoop() {
+    while (true) {
+        std::cout << "hola\n";
+    }
 }
 
 bool IsSockaddrValid(const sockaddr_in &addr) {

@@ -5,6 +5,10 @@
 #ifndef PACKET_H
 #define PACKET_H
 #include <cstdint>
+#include <cstdint>
+#include <cstdlib>  // Para exit()
+#include <iostream>
+#include "NetworkHeaders.h"
 
 struct Buffer {
     uint8_t *m_buffer;
@@ -25,6 +29,14 @@ struct Buffer {
 };
 
 struct PacketHeader {
+    uint16_t packet_id = 0;
+    uint32_t packet_sequence = 0;
+    uint8_t priority = 0;
+    uint32_t ack_bitfield = 0;
+    uint16_t payload_size = 0;
 
+    void WriteFromStructToBuffer(Buffer &buffer);
+    void ReadFromBufferToStruct(Buffer &buffer);
 };
+
 #endif //PACKET_H

@@ -8,11 +8,12 @@
 #include "ObserverPattern.h"
 
 
-class LobbyManager : public Observer, std::enable_shared_from_this<LobbyManager> {
+class LobbyManager : public Observer{
 private:
     std::shared_ptr<NetworkManager> m_nM;
 public:
     LobbyManager(std::shared_ptr<NetworkManager> network_manager);
+void Init(std::shared_ptr<LobbyManager> self);
     void Join();
     void Host();
     void Update(PacketHeader packet_header) override;
