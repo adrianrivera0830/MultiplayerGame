@@ -25,10 +25,6 @@ void LobbyManager::Join() {
     int port;
 
 
-    PacketHeader packet_header;
-    packet_header.packet_id = 10;
-    Buffer write(1024);
-    packet_header.WriteFromStructToBuffer(write);
 
 
     std::cout << "Ingrese la direccion IP del oponente: ";
@@ -47,10 +43,21 @@ void LobbyManager::Join() {
     std::thread thread(&NetworkManager::CommunicationLoop, m_nM.get());
     thread.detach();
 
-    m_nM->AddPacketToSend(packet_header);
+    PacketHeader connect_header;
+    connect_header.packet_id = PacketIDToInt(PacketID::CONNECT);
+    connect_header.priority = 1;
+    m_nM->AddPacketToSend(connect_header);
 
     while (true) {
+        int numero;
+        std::cin >> numero;
 
+        if (numero == 1) {
+            PacketHeader debug;
+            debug.packet_id = PacketIDToInt(PacketID::DEBUG);
+            debug.priority = 1;
+            m_nM->AddPacketToSend(debug);
+        }
     }
 
 
@@ -131,19 +138,58 @@ void LobbyManager::Join() {
 }
 
 void LobbyManager::Host() {
-
     std::thread thread(&NetworkManager::CommunicationLoop, m_nM.get());
     thread.detach();
 
     std::cout << "Hosteando!" << std::endl;
-
+    std::cout << "Esperando jugador...\n" << std::endl;
 
     while (true) {
+        if (m_nM->IsOpponentConnected()) {
+            int option;
+            std::cout << "Ingresa 1 para iniciar el juego o 0 para abandonar: ";
+            std::cin >> option;
 
+            if (option == 1) {
+                std::cout << "Iniciando juego...\n";
+
+                PacketHeader startGameHeader;
+                startGameHeader.packet_id = PacketIDToInt(PacketID::START_GAME);
+                startGameHeader.priority = 1;
+
+                m_nM->AddPacketToSend(startGameHeader);
+
+
+
+                break;  // Salir del loop para continuar con la lógica del juego
+            } else if (option == 0) {
+                std::cout << "Saliendo del juego...\n";
+                exit(0); // Terminar el programa
+            } else {
+                std::cout << "Opción inválida. Inténtalo de nuevo.\n";
+            }
+        }
+    }
+
+    while (true) {
+        int numero;
+        std::cin >> numero;
+
+        if (numero == 1) {
+            PacketHeader debug;
+            debug.packet_id = PacketIDToInt(PacketID::DEBUG);
+            debug.priority = 1;
+            m_nM->AddPacketToSend(debug);
+        }
     }
 }
 
 void LobbyManager::Update(PacketHeader packet_header) {
-    std::cout << "se recibio un paquete";
+    if (IntToID(packet_header.packet_id) == PacketID::CONNECT) {
+        std::cout << "Se unio un jugador!\n";
+    }
+    else if(IntToID(packet_header.packet_id) == PacketID::START_GAME) {
+        std::cout << "Empezando juego!\n";
+    }
     //std::cout << packet_header.packet_id;
 }

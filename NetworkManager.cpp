@@ -15,6 +15,22 @@ void NetworkManager::Send(char* buffer, int size) {
 
 }
 
+void NetworkManager::printPendingToAck() {
+    std::cout << "Pending to ACK elements: ";
+    for (int elem : pendingToAck) {
+        std::cout << elem << " ";
+    }
+    std::cout << std::endl;
+}
+
+void NetworkManager::printNotACKEDSentPacketsKeys() {
+    std::cout << "Not ACKED Sent Packets (keys): ";
+    for (const auto& pair : notACKEDSentPackets) {
+        std::cout << pair.first << " ";
+    }
+    std::cout << std::endl;
+}
+
 void NetworkManager::Receive() {
     Buffer receiveBuffer(1024);
 
@@ -35,19 +51,54 @@ void NetworkManager::Receive() {
     PacketHeader received;
     received.ReadFromBufferToStruct(receiveBuffer);
 
+    pendingToAck.push_back(received.packet_sequence);
+
+    if (pendingToAck.size() > BITFIELD_CAPACITY) {
+        pendingToAck.pop_front();
+    }
     SetPacket(received);
 
+    if (received.packet_id > opponentSeqNumber) {
+        opponentSeqNumber = received.packet_id;
+    }
+
+    for (uint8_t i = 0; i < 32; i++) {
+        if (received.ack_bitfield & (1U << i)) { // Verifica si el bit en posición 'i' está encendido
+            int ack = received.lastSequenceReceived - i;
+            std::cout << "Se recibio el ack del paquete " << ack << std::endl;
+        }
+    }
+
+    printPendingToAck();
+
+}
+
+
+
+void NetworkManager::PreparePacket() {
+    PacketHeader toSendHeader = toSendPackets.front();
+    toSendPackets.pop();
+    toSendHeader.lastSequenceReceived = opponentSeqNumber;
+    SetPacketAckBitfield(toSendHeader);
+    if (toSendHeader.packet_sequence == 0) {
+        toSendHeader.packet_sequence = mySeqNumber;
+        mySeqNumber++;
+    }
+
+    Buffer write(1024);
+    toSendHeader.WriteFromStructToBuffer(write);
+    Send((char *)write.m_buffer,write.m_size);
+
+    auto timestamp = std::chrono::high_resolution_clock::now();
+
+    notACKEDSentPackets.insert_or_assign(toSendHeader.packet_sequence,std::make_pair(toSendHeader,timestamp));
+    printNotACKEDSentPacketsKeys();
 }
 
 void NetworkManager::CommunicationLoop() {
     while (true) {
         if (!toSendPackets.empty()) {
-            PacketHeader toSendHeader = toSendPackets.front();
-            toSendPackets.pop();
-
-            Buffer write(1024);
-            toSendHeader.WriteFromStructToBuffer(write);
-            Send((char *)write.m_buffer,write.m_size);
+            PreparePacket();
         }
 
         Receive();
@@ -58,11 +109,19 @@ void NetworkManager::AddPacketToSend(PacketHeader header) {
     toSendPackets.push(header);
 }
 
+
 bool IsSockaddrValid(const sockaddr_in &addr) {
     if (addr.sin_family != AF_INET) return false;
     if (addr.sin_addr.s_addr == INADDR_ANY) return false;
     if (ntohs(addr.sin_port) == 0) return false;
 
+    return true;
+}
+
+bool NetworkManager::IsOpponentConnected() {
+    if (!IsSockaddrValid(m_opponent)) {
+        return false;
+    }
     return true;
 }
 

@@ -28,17 +28,39 @@ struct Buffer {
 
 };
 
+enum class PacketID {
+    CONNECT = 0,
+    DISCONNECT = 1,
+    START_GAME = 2,
+    GOAL = 3,
+    END_GAME = 4,
+    MOVE = 5,
+    DEBUG = 6
+};
+
+PacketID IntToID(int value);
+
+// Convierte un PacketID a int
+int PacketIDToInt(PacketID id);
+
+const int BITFIELD_CAPACITY = 32;
 struct PacketHeader {
     uint16_t packet_id = 0;
     uint32_t packet_sequence = 0;
     uint8_t priority = 0;
+    uint32_t lastSequenceReceived = 0;
+    //Si se cambia cambiar bitfield capacity
     uint32_t ack_bitfield = 0;
     uint16_t payload_size = 0;
-
+    void SetACKBit(int pos);
     void WriteFromStructToBuffer(Buffer &buffer);
     void ReadFromBufferToStruct(Buffer &buffer);
 };
 
+
+inline void PacketHeader::SetACKBit(int pos) {
+    ack_bitfield |= (1 << pos);
+}
 
 template<typename T>
 void WriteIntData(Buffer& buffer, T data) {
@@ -96,5 +118,6 @@ void ReadIntData(Buffer& buffer, T& data) {
     // Actualizar índice
     buffer.index += sizeof(T);
 }
+
 
 #endif //PACKET_H
