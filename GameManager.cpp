@@ -4,6 +4,14 @@
 
 #include "GameManager.h"
 
+#include <thread>
+
+
+void GameManager::GameManagerLoop() {
+    while (true) {
+        std::cout << "hola\n";
+    }
+}
 
 void GameManager::Init(std::shared_ptr<GameManager> self) {
     m_nM->Attach(self);
@@ -27,8 +35,12 @@ bool GameManager::GetGameStarted() const {
 
 void GameManager::StartGame() {
     SetGameState(true);
-    game.StartGame();
+    std::thread thread(&Game::StartGame,&game);
+    thread.detach();
+    GameManagerLoop();
 }
+
+
 
 void GameManager::Update(PacketHeader packet_header) {
 }

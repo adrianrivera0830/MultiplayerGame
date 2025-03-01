@@ -14,6 +14,8 @@ private:
     bool game_started = false;
     std::shared_ptr<NetworkManager> m_nM;
     Game game;
+private:
+    void GameManagerLoop();
 
 public:
     void Init(std::shared_ptr<GameManager> self);
