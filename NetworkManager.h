@@ -20,26 +20,11 @@ class NetworkManager :  public Subject{
 private:
     void Send(char *buffer, int size);
     void Receive();
-
     void PreparePacket();
-
-
     void printPendingToAck();
-
     // Función para imprimir solo las claves del unordered_map
     void printNotACKEDSentPacketsKeys();
-    //
-    void SetPacketAckBitfield(PacketHeader& packet_header) {
-        for (auto it = pendingToAck.begin(); it != pendingToAck.end(); ) {
-            int position =  opponentSeqNumber - *it;
-            if (position >= BITFIELD_CAPACITY) {  // Eliminar números pares
-                it = pendingToAck.erase(it);  // erase() devuelve el siguiente iterador válido
-            } else {
-                packet_header.SetACKBit(position);
-                ++it;  // Solo avanzar cuando no eliminamos
-            }
-        }
-    }
+    void SetPacketAckBitfield(PacketHeader &packet_header);
 
 private:
 
@@ -51,18 +36,22 @@ private:
     socklen_t m_opponentLen;
 
     std::queue<PacketHeader> toSendPackets;
-    std::list<int> pendingToAck;
+    std::list<int> pendingToAckSenderPackets;
     std::unordered_map<int, std::pair
     <
         PacketHeader, std::chrono::time_point<std::chrono::high_resolution_clock>>
-    > notACKEDSentPackets;
+    > sentNotACKEDPackets;
 
 
 public:
     NetworkManager();
     void SetOpponent(sockaddr_in opponent);
+
+    void UpdateNotAckedTimers();
+    bool IsPacketPendingAck(int sequence);
+
     void CommunicationLoop();
-    void AddPacketToSend(PacketHeader header);
+    void AddPacketToSend(PacketHeader &header);
 
     bool IsOpponentConnected();
 };

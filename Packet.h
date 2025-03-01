@@ -35,7 +35,8 @@ enum class PacketID {
     GOAL = 3,
     END_GAME = 4,
     MOVE = 5,
-    DEBUG = 6
+    DEBUG = 6,
+    ACK = 7
 };
 
 PacketID IntToID(int value);
@@ -45,16 +46,33 @@ int PacketIDToInt(PacketID id);
 
 const int BITFIELD_CAPACITY = 32;
 struct PacketHeader {
+private:
     uint16_t packet_id = 0;
     uint32_t packet_sequence = 0;
     uint8_t priority = 0;
-    uint32_t lastSequenceReceived = 0;
+    uint32_t mostRecentACK = 0;
     //Si se cambia cambiar bitfield capacity
     uint32_t ack_bitfield = 0;
     uint16_t payload_size = 0;
+public:
     void SetACKBit(int pos);
     void WriteFromStructToBuffer(Buffer &buffer);
     void ReadFromBufferToStruct(Buffer &buffer);
+
+    uint16_t GetPacketID() const { return packet_id; }
+    uint32_t GetPacketSequence() const { return packet_sequence; }
+    uint8_t GetPriority() const { return priority; }
+    uint32_t GetMostRecentACK() const { return mostRecentACK; }
+    uint32_t GetAckBitfield() const { return ack_bitfield; }
+    uint16_t GetPayloadSize() const { return payload_size; }
+
+    // Setters (con validaciones básicas)
+    void SetPacketID(uint16_t id) { packet_id = id; }
+    void SetPacketSequence(uint32_t seq) { packet_sequence = seq; }
+    void SetPriority(uint8_t prio) { priority = prio; }
+    void SetMostRecentACK(uint32_t lastSeq) { mostRecentACK = lastSeq; }
+    void SetPayloadSize(uint16_t size) { payload_size = size; }
+
 };
 
 

@@ -44,8 +44,8 @@ void LobbyManager::Join() {
     thread.detach();
 
     PacketHeader connect_header;
-    connect_header.packet_id = PacketIDToInt(PacketID::CONNECT);
-    connect_header.priority = 1;
+    connect_header.SetPacketID(PacketIDToInt(PacketID::CONNECT));
+    // connect_header.SetPriority(1);
     m_nM->AddPacketToSend(connect_header);
 
     while (true) {
@@ -54,8 +54,8 @@ void LobbyManager::Join() {
 
         if (numero == 1) {
             PacketHeader debug;
-            debug.packet_id = PacketIDToInt(PacketID::DEBUG);
-            debug.priority = 1;
+            debug.SetPacketID(PacketIDToInt(PacketID::DEBUG));
+            // debug.SetPriority(1);
             m_nM->AddPacketToSend(debug);
         }
     }
@@ -144,6 +144,9 @@ void LobbyManager::Host() {
     std::cout << "Hosteando!" << std::endl;
     std::cout << "Esperando jugador...\n" << std::endl;
 
+    PacketHeader startGameHeader;
+    startGameHeader.SetPacketID(PacketIDToInt(PacketID::START_GAME));
+
     while (true) {
         if (m_nM->IsOpponentConnected()) {
             int option;
@@ -151,11 +154,8 @@ void LobbyManager::Host() {
             std::cin >> option;
 
             if (option == 1) {
-                std::cout << "Iniciando juego...\n";
+                std::cout << "Preparando juego...\n";
 
-                PacketHeader startGameHeader;
-                startGameHeader.packet_id = PacketIDToInt(PacketID::START_GAME);
-                startGameHeader.priority = 1;
 
                 m_nM->AddPacketToSend(startGameHeader);
 
@@ -170,26 +170,33 @@ void LobbyManager::Host() {
             }
         }
     }
+    //
+    // std::cout << "Cargando.....\n";
+    //
+    // while (m_nM->IsPacketPendingAck(startGameHeader.GetPacketSequence())) {
+    //
+    //     std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    // }
+    // std::cout << "Juego empezado!\n";
 
-    while (true) {
-        int numero;
-        std::cin >> numero;
 
-        if (numero == 1) {
-            PacketHeader debug;
-            debug.packet_id = PacketIDToInt(PacketID::DEBUG);
-            debug.priority = 1;
-            m_nM->AddPacketToSend(debug);
-        }
-    }
 }
 
 void LobbyManager::Update(PacketHeader packet_header) {
-    if (IntToID(packet_header.packet_id) == PacketID::CONNECT) {
-        std::cout << "Se unio un jugador!\n";
-    }
-    else if(IntToID(packet_header.packet_id) == PacketID::START_GAME) {
-        std::cout << "Empezando juego!\n";
-    }
+    // if (IntToID(packet_header.GetPacketID()) == PacketID::CONNECT) {
+    //     std::cout << "Se unio un jugador!\n";
+    // }
+    // else if(IntToID(packet_header.GetPacketID()) == PacketID::START_GAME) {
+    //     PacketHeader ackPacket;
+    //     ackPacket.SetPacketID(PacketIDToInt(PacketID::ACK));
+    //     ackPacket.SetPriority(1);
+    //     m_nM->AddPacketToSend(ackPacket);
+    //
+    //     // Aquí evitamos cambiar el estado hasta que se confirme el ACK
+    //     while (m_nM->IsPacketPendingAck(packet_header.GetPacketSequence())) {
+    //         std::this_thread::sleep_for(std::chrono::milliseconds(100));
+    //     }
+    //     std::cout << "Juego comenzado correctamente!" << std::endl;
+    // }
     //std::cout << packet_header.packet_id;
 }
