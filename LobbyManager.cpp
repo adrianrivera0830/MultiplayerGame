@@ -12,6 +12,11 @@ LobbyManager::LobbyManager(std::shared_ptr<NetworkManager> network_manager) {
     }
     m_nM = network_manager;
 
+    game_manager = std::make_shared<GameManager>(m_nM);
+
+    game_manager->Init(game_manager);
+
+
 }
 
 void LobbyManager::Init(std::shared_ptr<LobbyManager> self) {
@@ -48,9 +53,11 @@ void LobbyManager::Join() {
 
     m_nM->AddPacketToSend(connect_header);
 
-    while (true) {
-        
+    while (!game_manager->GetGameStarted()) {
+
     }
+
+    game_manager->StartGame();
 }
 
 void LobbyManager::Host() {
@@ -72,6 +79,8 @@ void LobbyManager::Host() {
             if (option == 1) {
                 m_nM->AddPacketToSend(startGameHeader);
                 std::cout << "Empezando juego\n";
+                game_manager->SetGameState(true);
+
 
                 break;  // Salir del loop para continuar con la lógica del juego
             } else if (option == 0) {
@@ -83,14 +92,20 @@ void LobbyManager::Host() {
         }
     }
 
+    game_manager->StartGame();
+
+
 
 }
 
 void LobbyManager::Update(PacketHeader packet_header) {
     if (IntToID(packet_header.GetPacketID()) == PacketID::START_GAME) {
         std::cout << "Empezando juego\n";
+        game_manager->SetGameState(true);
+
     }
     if (IntToID(packet_header.GetPacketID()) == PacketID::CONNECT) {
         std::cout << "Jugador conectado.\n";
+
     }
 }
