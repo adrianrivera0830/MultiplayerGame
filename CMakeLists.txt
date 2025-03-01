@@ -47,7 +47,14 @@ if (WIN32)
             LobbyManager.cpp
             LobbyManager.h
             GameManager.cpp
-            GameManager.h)
+            GameManager.h
+            TextureRenderer.cpp
+            TextureRenderer.h
+            Game.cpp
+            Game.h
+            Mallet.cpp
+            Mallet.h
+            structs.h)
 
     # Vincular bibliotecas necesarias
     target_link_libraries(MultiplayerGame mingw32 SDL2main SDL2 SDL2_image SDL2_ttf ws2_32)
@@ -75,7 +82,14 @@ elseif (UNIX)
             LobbyManager.cpp
             LobbyManager.h
             GameManager.cpp
-            GameManager.h)
+            GameManager.h
+            TextureRenderer.cpp
+            TextureRenderer.h
+            Game.cpp
+            Game.h
+            Mallet.cpp
+            Mallet.h
+            structs.h)
 
     target_link_libraries(MultiplayerGame ${SDL2_LIBRARIES} ${SDL2_IMAGE_LIBRARIES} ${SDL2_TTF_LIBRARIES})
 endif()

@@ -2,7 +2,9 @@
 
 #include "LobbyManager.h"
 #include "NetworkManager.h"
-int main() {
+
+int main(int argc, char* argv[]) {
+
     std::shared_ptr<NetworkManager> networkManager;
     std::shared_ptr<LobbyManager> lobby_manager;
 

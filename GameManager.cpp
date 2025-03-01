@@ -4,6 +4,7 @@
 
 #include "GameManager.h"
 
+
 void GameManager::Init(std::shared_ptr<GameManager> self) {
     m_nM->Attach(self);
 }
@@ -25,6 +26,8 @@ bool GameManager::GetGameStarted() const {
 }
 
 void GameManager::StartGame() {
+    SetGameState(true);
+    game.StartGame();
 }
 
 void GameManager::Update(PacketHeader packet_header) {

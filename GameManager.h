@@ -6,12 +6,14 @@
 #define GAMEMANAGER_H
 #include "NetworkManager.h"
 #include "ObserverPattern.h"
+#include "Game.h"
 
 
 class GameManager : public Observer {
 private:
     bool game_started = false;
     std::shared_ptr<NetworkManager> m_nM;
+    Game game;
 
 public:
     void Init(std::shared_ptr<GameManager> self);
