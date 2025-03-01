@@ -17,45 +17,6 @@ void NetworkManager::Send(char* buffer, int size) {
 
 }
 
-void NetworkManager::printPendingToAck() {
-    std::cout << "\nin ack bitset: ";
-    for (int elem : pendingToAckSenderPackets) {
-        std::cout << elem << " ";
-    }
-    std::cout << std::endl;
-}
-
-void NetworkManager::printNotACKEDSentPacketsKeys() {
-    std::cout << "\nSent packets still not acked: ";
-    for (const auto& pair : sentNotACKEDPackets) {
-        std::cout << pair.first << " ";
-    }
-    std::cout << std::endl;
-}
-
-void NetworkManager::SetPacketAckBitfield(PacketHeader &packet_header) {
-    int mostRecentSeq = packet_header.GetMostRecentACK();
-    if (mostRecentSeq == 0) {return;}
-
-
-     for (auto it = pendingToAckSenderPackets.begin(); it != pendingToAckSenderPackets.end(); ) {
-         if (*it == mostRecentSeq) {break;}
-         int position =  (mostRecentSeq - 1) - *it;
-
-         if (position >= BITFIELD_CAPACITY) {
-             it = pendingToAckSenderPackets.erase(it);
-         } else {
-             packet_header.SetACKBit(position);
-             ++it;  // Solo avanzar cuando no eliminamos
-         }
-     }
-
-}
-
-bool NetworkManager::IsPacketPendingAck(int sequence) {
-    return sentNotACKEDPackets.find(sequence) != sentNotACKEDPackets.end();
-
-}
 
 
 void NetworkManager::Receive() {
@@ -78,31 +39,7 @@ void NetworkManager::Receive() {
     PacketHeader received;
     received.ReadFromBufferToStruct(receiveBuffer);
 
-
-    //
-    // pendingToAckSenderPackets.push_back(received.GetPacketSequence());
-    //
-    // if (pendingToAckSenderPackets.size() > BITFIELD_CAPACITY) {
-    //     pendingToAckSenderPackets.pop_front();    }
     SetPacket(received);
-    //
-    // if (received.GetPacketSequence() > opponentSeqNumber) {
-    //     opponentSeqNumber = received.GetPacketSequence();
-    // }
-
-    //
-    // if (sentNotACKEDPackets.find(received.GetMostRecentACK()) != sentNotACKEDPackets.end()) {
-    //     sentNotACKEDPackets.erase(received.GetMostRecentACK());
-    // }
-    //
-    //  for (uint8_t i = 0; i < 32; i++) {
-    //      if (received.GetAckBitfield() & (1U << i)) { // Verifica si el bit en posición 'i' está encendido
-    //          int pos = (received.GetMostRecentACK() - 1)- i;
-    //          if (sentNotACKEDPackets.find(pos) != sentNotACKEDPackets.end()) {
-    //              sentNotACKEDPackets.erase(pos);
-    //          }
-    //      }
-    //  }
 
 }
 
@@ -113,20 +50,6 @@ void NetworkManager::PreparePacket() {
     //Obtener el paquete mas reciente por enviar y eliminarlo de paquetes por enviar
     PacketHeader toSendHeader = toSendPackets.front();
     toSendPackets.pop();
-
-    // //Asignamos la ultima secuencia que recibimos del oponente
-    // toSendHeader.SetMostRecentACK(opponentSeqNumber);
-    //
-    // //Asignamos el bitfield en relacion a nuestro ultimo paquete de secuencia recibido
-    // //(El primer bit seteado es  n-1) donde n es nuestra ultima secuencia recibida
-    // SetPacketAckBitfield(toSendHeader);
-    //
-    //
-    // //Guardamos el tiempo en el que se envio el paquete
-    // auto timestamp = std::chrono::high_resolution_clock::now();
-    //
-    // //Guardamos el paquete que acabmos de enviar a paquetes esperando por confirmacion
-    // sentNotACKEDPackets.insert_or_assign(toSendHeader.GetPacketSequence(),std::make_pair(toSendHeader,timestamp));
 
 
     Buffer write(1024);
@@ -155,8 +78,6 @@ void NetworkManager::CommunicationLoop() {
 }
 
 void NetworkManager::AddPacketToSend(PacketHeader& header) {
-    header.SetPacketSequence(mySeqNumber);
-    mySeqNumber++;
 
     toSendPackets.push(header);
 }
@@ -185,25 +106,6 @@ void NetworkManager::SetOpponent(sockaddr_in opponent) {
     m_opponentLen = sizeof(m_opponent);
 }
 
-void NetworkManager::UpdateNotAckedTimers() {
-    auto now = std::chrono::high_resolution_clock::now();
-
-    for (auto it = sentNotACKEDPackets.begin(); it != sentNotACKEDPackets.end(); ) {
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - it->second.second).count();
-
-        if (elapsed > 5000) { // Más de 1 segundo (1000ms)
-            PacketHeader packet_header = it->second.first;
-            std::cout << "Ha pasado más de 5s desde que se insertó el paquete con Seq Number: " << it->first << std::endl;
-
-            it = sentNotACKEDPackets.erase(it); // Eliminar y avanzar el iterador correctamente
-            if (packet_header.GetPriority() == 1) {
-                AddPacketToSend(packet_header);
-            }
-        } else {
-            it++;
-        }
-    }
-}
 
 
 NetworkManager::NetworkManager() {
